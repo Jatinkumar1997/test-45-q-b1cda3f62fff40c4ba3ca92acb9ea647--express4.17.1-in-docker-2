@@ -15,13 +15,12 @@ router.get('/:lead_id',async (req,res)=>{
         res.status(200).send(lead)
     }
     catch(e){
-        res.status(404).send({
+        console.error('Getting issue:'+e.message)
+        res.status(400).send({
             "status":"failure",
             "reason":"Lead not found"
         })
-    }
-    
-    
+    } 
 })
 
 router.post('/', async (req,res)=>{
@@ -34,7 +33,7 @@ router.post('/', async (req,res)=>{
         res.status(201).send({newLead})
     }
     catch(e){
-        console.error(e)
+        console.error("Creation issue:"+e.message)
         res.status(400).send({
             "status":"failure",
             "reason":e.message
@@ -65,7 +64,7 @@ router.put('/:lead_id', async (req,res)=>{
         }
     }
     catch(e){
-        console.error(e)
+        console.error("Update issue: "+ e.message)
         res.status(400).send({
             "status":"failure",
             "reason":e.message
@@ -87,7 +86,7 @@ router.delete('/:lead_id', async (req,res)=>{
         })
     }
     catch(e){
-        console.error(e)
+        console.error("Deletion issue:" + e.message)
         res.status(400).send({
             "status":"failure",
             "reason":e.message
