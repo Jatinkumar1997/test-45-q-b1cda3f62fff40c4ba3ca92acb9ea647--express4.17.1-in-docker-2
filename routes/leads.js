@@ -1,96 +1,54 @@
 var express = require('express');
 var router = express.Router();
-var Lead = require('../models/lead')
+var leadService = require('../services/leads')
+var responseHandler = require('../APIResponseHandles/responseHandler')
 
 // fetch a lead
 router.get('/:lead_id',async (req,res)=>{
-    if(!req.params.lead_id){
-        res.status(400).send({
-            "status":"failure",
-            "reason":"explanation"
-        })
+    const fetchRes = new leadService().getLead(req)
+    if(fetchRes.status === 'success'){
+        return new responseHandler().sendSuccess(res,fetchRes.lead)
     }
-    try{
-        const lead = await Lead.findById(req.params.lead_id)
-        res.status(200).send(lead)
+    else{
+        if(fetchRes.reason.contains('not found')){
+            return new responseHandler().sendNotFound(res,fetchRes)
+        }
+        else{
+            return new responseHandler().sendBadRequest(res,fetchRes)
+        }
     }
-    catch(e){
-        console.error('Getting issue:'+e.message)
-        res.status(400).send({
-            "status":"failure",
-            "reason":"Lead not found"
-        })
-    } 
 })
 
 router.post('/', async (req,res)=>{
-    try{
-        const reqLead = req.body
-        reqLead.status = 'Created'
-        const newLead = new Lead(reqLead)
-        await newLead.save()
-        console.log('Lead Saved')
-        res.status(201).send({newLead})
+
+    const createRes = await new leadService().createLead(req)
+    if(createRes.status === 'success'){
+        return new responseHandler().sendCreated(res,createRes.newLead)
     }
-    catch(e){
-        console.error("Creation issue:"+e.message)
-        res.status(400).send({
-            "status":"failure",
-            "reason":e.message
-        })
+    else{
+        return new responseHandler().sendBadRequest(res,createRes)
     }
 })
 
 router.put('/:lead_id', async (req,res)=>{
-    if(!req.params.lead_id){
-        res.status(400).send({
-            "status":"failure",
-            "reason":"Lead Not Found"
-        })
+
+    const updateRes = await new leadService().updateLead(req)
+    if(updateRes.status==='success'){
+        return new responseHandler().sendUpdated(res,updateRes)
     }
-    try{
-        const lead = await Lead.findById(req.params.lead_id)
-        if(lead){
-            lead.first_name = req.body.first_name
-            lead.last_name = req.body.last_name
-            lead.mobile = req.body.mobile
-            lead.email = req.body.email
-            lead.location_type = req.body.location_type
-            lead.location_string = req.body.location_string
-            await lead.save()
-            res.status(202).send({
-                "status":"success"
-            })
-        }
-    }
-    catch(e){
-        console.error("Update issue: "+ e.message)
-        res.status(400).send({
-            "status":"failure",
-            "reason":e.message
-        })
+    else{
+        return new responseHandler().sendBadRequest(res,updateRes)
     }
 })
 
 router.delete('/:lead_id', async (req,res)=>{
-    if(!req.params.lead_id){
-        res.status(400).send({
-            "status":"failure",
-            "reason":"empty lead id"
-        })
+    
+    const deleteRes = await new leadService().deleteLead(req)
+    if(deleteRes.status === 'success'){
+        return new responseHandler().sendSuccess(res,deleteRes)
     }
-    try{
-        await Lead.deleteOne({_id:req.params.lead_id})
-        res.status(200).send({
-            "status":"success"
-        })
-    }
-    catch(e){
-        console.error("Deletion issue:" + e.message)
-        res.status(400).send({
-            "status":"failure",
-            "reason":e.message
-        })
+    else{
+        return new responseHandler().sendBadRequest(res,deleteRes)
     }
 })
 

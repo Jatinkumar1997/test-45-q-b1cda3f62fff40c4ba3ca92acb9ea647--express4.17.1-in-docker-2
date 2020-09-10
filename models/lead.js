@@ -1,7 +1,11 @@
 const mongoose = require('mongoose')
 
 const leadSchema = new mongoose.Schema({
-
+    id:{
+        type:Number,
+        unique:true,
+        required:true
+    },
     first_name:{
         type:String,
         required:true,
